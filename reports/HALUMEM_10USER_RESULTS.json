@@ -1,0 +1,266 @@
+{
+  "dataset": "HaluMem-Medium",
+  "subset": "10-user evaluation snapshot",
+  "configuration": {
+    "llm_model": "gpt-4o-mini",
+    "embedding_model": "text-embedding-3-small",
+    "retrieval_top_k": 20,
+    "qa_context_top_k": 20,
+    "qa_repeats": 3
+  },
+  "variants": {
+    "b0": {
+      "memory_units": 2434,
+      "retrieval_rows": 1722,
+      "qa_rows": 5166,
+      "qa": {
+        "variant": "b0",
+        "repeats": 3,
+        "questions": 1722,
+        "repeat_results": [
+          {
+            "repeat": 1,
+            "questions": 1722,
+            "correct": 659,
+            "accuracy": 0.3826945412311266,
+            "hallucination": 374,
+            "omission": 689,
+            "error": 0
+          },
+          {
+            "repeat": 2,
+            "questions": 1722,
+            "correct": 661,
+            "accuracy": 0.38385598141695704,
+            "hallucination": 374,
+            "omission": 687,
+            "error": 0
+          },
+          {
+            "repeat": 3,
+            "questions": 1722,
+            "correct": 644,
+            "accuracy": 0.37398373983739835,
+            "hallucination": 370,
+            "omission": 708,
+            "error": 0
+          }
+        ],
+        "mean_accuracy": 0.3801780874951607,
+        "std_accuracy": 0.0044056549271161765
+      },
+      "retrieval_posthoc_gold_session": {
+        "queries": 1722,
+        "queries_with_evidence": 1288,
+        "queries_with_resolved_gold_session": 1288,
+        "queries_with_unresolved_gold_session": 0,
+        "hit_rate_all_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.037267080745341616,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.11024844720496894
+        },
+        "hit_rate_resolved_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.037267080745341616,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.11024844720496894
+        },
+        "mrr_all_evidence_queries": 0.05155963171866203,
+        "mrr_resolved_evidence_queries": 0.05155963171866203,
+        "mean_gold_rank_resolved": 105.94099378881988
+      }
+    },
+    "b1": {
+      "memory_units": 2405,
+      "retrieval_rows": 1722,
+      "qa_rows": 5166,
+      "qa": {
+        "variant": "b1",
+        "repeats": 3,
+        "questions": 1722,
+        "repeat_results": [
+          {
+            "repeat": 1,
+            "questions": 1722,
+            "correct": 659,
+            "accuracy": 0.3826945412311266,
+            "hallucination": 358,
+            "omission": 705,
+            "error": 0
+          },
+          {
+            "repeat": 2,
+            "questions": 1722,
+            "correct": 658,
+            "accuracy": 0.3821138211382114,
+            "hallucination": 367,
+            "omission": 697,
+            "error": 0
+          },
+          {
+            "repeat": 3,
+            "questions": 1722,
+            "correct": 661,
+            "accuracy": 0.38385598141695704,
+            "hallucination": 364,
+            "omission": 697,
+            "error": 0
+          }
+        ],
+        "mean_accuracy": 0.3828881145954317,
+        "std_accuracy": 0.0007242852084347485
+      },
+      "retrieval_posthoc_gold_session": {
+        "queries": 1722,
+        "queries_with_evidence": 1288,
+        "queries_with_resolved_gold_session": 1288,
+        "queries_with_unresolved_gold_session": 0,
+        "hit_rate_all_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.03493788819875776,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.10947204968944099
+        },
+        "hit_rate_resolved_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.03493788819875776,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.10947204968944099
+        },
+        "mrr_all_evidence_queries": 0.05144094570215577,
+        "mrr_resolved_evidence_queries": 0.05144094570215577,
+        "mean_gold_rank_resolved": 105.1389751552795
+      }
+    },
+    "b2": {
+      "memory_units": 2427,
+      "retrieval_rows": 1722,
+      "qa_rows": 5166,
+      "qa": {
+        "variant": "b2",
+        "repeats": 3,
+        "questions": 1722,
+        "repeat_results": [
+          {
+            "repeat": 1,
+            "questions": 1722,
+            "correct": 661,
+            "accuracy": 0.38385598141695704,
+            "hallucination": 372,
+            "omission": 689,
+            "error": 0
+          },
+          {
+            "repeat": 2,
+            "questions": 1722,
+            "correct": 648,
+            "accuracy": 0.37630662020905925,
+            "hallucination": 353,
+            "omission": 721,
+            "error": 0
+          },
+          {
+            "repeat": 3,
+            "questions": 1722,
+            "correct": 658,
+            "accuracy": 0.3821138211382114,
+            "hallucination": 357,
+            "omission": 707,
+            "error": 0
+          }
+        ],
+        "mean_accuracy": 0.3807588075880759,
+        "std_accuracy": 0.003227512969518595
+      },
+      "retrieval_posthoc_gold_session": {
+        "queries": 1722,
+        "queries_with_evidence": 1288,
+        "queries_with_resolved_gold_session": 1288,
+        "queries_with_unresolved_gold_session": 0,
+        "hit_rate_all_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.04114906832298137,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.1172360248447205
+        },
+        "hit_rate_resolved_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.04114906832298137,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.1172360248447205
+        },
+        "mrr_all_evidence_queries": 0.05178537170942845,
+        "mrr_resolved_evidence_queries": 0.05178537170942845,
+        "mean_gold_rank_resolved": 106.09472049689441
+      }
+    },
+    "b3": {
+      "memory_units": 2445,
+      "retrieval_rows": 1722,
+      "qa_rows": 5166,
+      "qa": {
+        "variant": "b3",
+        "repeats": 3,
+        "questions": 1722,
+        "repeat_results": [
+          {
+            "repeat": 1,
+            "questions": 1722,
+            "correct": 662,
+            "accuracy": 0.38443670150987225,
+            "hallucination": 366,
+            "omission": 694,
+            "error": 0
+          },
+          {
+            "repeat": 2,
+            "questions": 1722,
+            "correct": 662,
+            "accuracy": 0.38443670150987225,
+            "hallucination": 372,
+            "omission": 688,
+            "error": 0
+          },
+          {
+            "repeat": 3,
+            "questions": 1722,
+            "correct": 662,
+            "accuracy": 0.38443670150987225,
+            "hallucination": 377,
+            "omission": 683,
+            "error": 0
+          }
+        ],
+        "mean_accuracy": 0.38443670150987225,
+        "std_accuracy": 0.0
+      },
+      "retrieval_posthoc_gold_session": {
+        "queries": 1722,
+        "queries_with_evidence": 1288,
+        "queries_with_resolved_gold_session": 1288,
+        "queries_with_unresolved_gold_session": 0,
+        "hit_rate_all_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.04114906832298137,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.11490683229813664
+        },
+        "hit_rate_resolved_evidence_queries": {
+          "hit@1": 0.03260869565217391,
+          "hit@5": 0.04114906832298137,
+          "hit@10": 0.06366459627329192,
+          "hit@20": 0.11490683229813664
+        },
+        "mrr_all_evidence_queries": 0.051723967237468325,
+        "mrr_resolved_evidence_queries": 0.051723967237468325,
+        "mean_gold_rank_resolved": 106.26009316770187
+      }
+    }
+  },
+  "notes": [
+    "Construction memory_units are published in full for every variant.",
+    "Exact provider construction-token attribution is unavailable at subset level and is not fabricated.",
+    "Retrieval metrics use the post-hoc gold-session audit because native target_boxes uses an incompatible evidence schema."
+  ]
+}
