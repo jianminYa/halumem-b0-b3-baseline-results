@@ -1,6 +1,8 @@
 # HaluMem-Medium B0/B1/B2/B3 Baseline Results
 
-这是 HaluMem-Medium 的 10-user evaluation snapshot，使用四个 memory construction 版本进行同口径 Retrieval 与 QA 对照。
+> 当前推荐使用 `10user-v2` 结果。`10user-v1` 是保留的历史审计快照：其 embedding 请求虽然返回 HTTP 200，但由于旧 runner 的 base URL 缺少 `/v1`，最终 vector store 中的向量全部为零向量。因此 v1 的 retrieval/QA 指标已标记为 **invalid**，不能作为正式 baseline。
+
+这是 HaluMem-Medium 的 10-user evaluation snapshot，使用四个 memory construction 版本进行同口径 Retrieval 与 QA 对照。修复后的 v2 结果重新生成 embedding、retrieval 和 QA，但复用了已完成的 memory construction。
 
 ## 实验配置
 
@@ -11,7 +13,7 @@
 | Retrieval ranking | `content + event + topic/keyword` |
 | Retrieval Top-K | 20 |
 | QA context | Top-20 |
-| QA repeats | 3 |
+| QA repeats（v2） | 1 |
 | 用户数 | 10 |
 | session 数 | 680 |
 | message 数 | 29,722 |
@@ -25,6 +27,21 @@
 - `B3`：merged extraction 版本，作为额外对照。
 
 ## 目录说明
+
+### 推荐结果：`artifacts/10user-v2/`
+
+每个版本提供：
+
+- `memory_units.jsonl`：实际复用的全部 memory units；与 v1 中的 construction artifact SHA-256 一致。
+- `retrieval_full.jsonl`：修复 embedding 后生成的完整 retrieval ranking。
+- `retrieval_posthoc_gold_session.json`：修复后的 gold-session Hit@K/MRR 审计。
+- `qa_results_1repeat.jsonl`：一次 QA + judge 的逐题结果及 token usage。
+- `qa_summary.json`：一次 QA aggregate。
+- `build_checkpoint.json`：构建来源和复用范围。
+
+### 历史结果：`artifacts/10user/`
+
+该目录保留 v1 的原始结果用于审计，但 v1 retrieval/QA 因全零 embedding 已失效。v1 的 memory construction artifact 仍然有效。
 
 每个版本都在 `artifacts/10user/<variant>/` 下提供：
 
@@ -40,22 +57,22 @@
 ## 如何查看一个 question
 
 ```bash
-# 查看某个版本的第一条 memory
-sed -n '1p' artifacts/10user/b0/memory_units.jsonl | python -m json.tool
+# 查看修复后版本某个 variant 的第一条 memory
+sed -n '1p' artifacts/10user-v2/b0/memory_units.jsonl | python -m json.tool
 
-# 查看某个 question 的完整 retrieval ranking
-rg '"qa_idx": 1' artifacts/10user/b0/retrieval_full.jsonl
+# 查看修复后某个 question 的完整 retrieval ranking
+rg '"qa_idx": 1' artifacts/10user-v2/b0/retrieval_full.jsonl
 
-# 查看该 question 的 gold-session post-hoc 对齐
+# 查看修复后 gold-session post-hoc 对齐
 python - <<'PY'
 import json
-p = json.load(open('artifacts/10user/b0/retrieval_posthoc_gold_session.json'))
+p = json.load(open('artifacts/10user-v2/b0/retrieval_posthoc_gold_session.json'))
 print(p['summary'])
 print(p['details'][1])
 PY
 
-# 查看三次 QA 结果
-rg '"qa_idx": 1' artifacts/10user/b0/qa_results_3repeats.jsonl
+# 查看一次 QA 结果
+rg '"qa_idx": 1' artifacts/10user-v2/b0/qa_results_1repeat.jsonl
 ```
 
 ## Retrieval 指标口径
@@ -66,12 +83,14 @@ HaluMem cleaned evidence 使用字典结构 `memory_content/memory_type`，而�
 
 ## Construction 口径
 
-`memory_units.jsonl` 是本 evaluation snapshot 实际使用的构建结果。subset 粒度的 provider construction token attribution 不可从现有 per-call log 精确恢复，因此本仓库不伪造 subset exact token；构建结果本身和 memory unit 数量完整保留。
+v2 没有重新执行 construction，因此本次新增 construction token 为 `0`。`memory_units.jsonl` 是从已完成 source run 复用的构建结果。
+
+现有 source construction log 没有保存 `source_file_id`，无法把 provider token 精确分配到这 10 个用户；因此报告同时给出 source full-run exact token，以及按 memory-unit 比例计算的非精确 estimate，estimate 不作为 exact cost。
 
 QA token 仅属于 QA/judge 阶段，不计入 construction cost。
 
 ## 结果摘要
 
-详细表格见 [`reports/10USER_BASELINE_REPORT.md`](reports/10USER_BASELINE_REPORT.md)。
+修复后详细表格见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)；旧版审计说明见 [`reports/10USER_BASELINE_REPORT.md`](reports/10USER_BASELINE_REPORT.md)。
 
-本仓库只发布 10-user evaluation snapshot；后续若扩大数据规模，应建立新的 release，而不是覆盖本版本 artifacts。
+本仓库只发布 10-user evaluation snapshot；后续若扩大数据规模，应建立新的 release，而不是覆盖本版本 artifacts。v2 的详细结果见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)。

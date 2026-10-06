@@ -1,0 +1,48 @@
+{
+  "status": "corrected_embedding_retrieval_qa",
+  "dataset": "HaluMem-Medium",
+  "users": 10,
+  "sessions": 680,
+  "messages": 29722,
+  "questions": 1722,
+  "config": {
+    "llm": "gpt-4o-mini",
+    "embedding": "text-embedding-3-small",
+    "retrieval_top_k": 20,
+    "qa_context_top_k": 20,
+    "qa_repeats": 1,
+    "embedding_base_path_normalized": true
+  },
+  "construction": {
+    "rerun": false,
+    "new_provider_tokens": 0,
+    "subset_exact_provider_attribution_available": false,
+    "subset_estimate_method": "source_full_run_total multiplied by 10-user/source memory-unit ratio",
+    "variants": {
+      "b0": {"memory_units": 2434, "source_memory_units": 4960, "source_total_tokens": 39896051, "estimated_subset_tokens": 19578022},
+      "b1": {"memory_units": 2405, "source_memory_units": 4949, "source_total_tokens": 31494520, "estimated_subset_tokens": 15304975},
+      "b2": {"memory_units": 2427, "source_memory_units": 4981, "source_total_tokens": 32634653, "estimated_subset_tokens": 15901285},
+      "b3": {"memory_units": 2445, "source_memory_units": 4993, "source_total_tokens": 29842630, "estimated_subset_tokens": 14613505}
+    }
+  },
+  "embedding_health": {
+    "b0": {"requests": 4019, "vector_files": 10, "vectors": 4019, "zero_vectors": 0, "dimension": 1536},
+    "b1": {"requests": 3990, "vector_files": 10, "vectors": 3990, "zero_vectors": 0, "dimension": 1536},
+    "b2": {"requests": 4012, "vector_files": 10, "vectors": 4012, "zero_vectors": 0, "dimension": 1536},
+    "b3": {"requests": 4030, "vector_files": 10, "vectors": 4030, "zero_vectors": 0, "dimension": 1536}
+  },
+  "retrieval": {
+    "denominator": "1288 evidence-bearing questions",
+    "metric_type": "posthoc gold-session audit",
+    "b0": {"hit_at_1": 0.35248447204968947, "hit_at_5": 0.547360248447205, "hit_at_10": 0.6141304347826086, "hit_at_20": 0.6855590062111802, "mrr": 0.44788857391507725, "mean_gold_rank": 32.850155279503106},
+    "b1": {"hit_at_1": 0.34316770186335405, "hit_at_5": 0.5349378881987578, "hit_at_10": 0.5986024844720497, "hit_at_20": 0.6708074534161491, "mrr": 0.4374309659975067, "mean_gold_rank": 33.97282608695652},
+    "b2": {"hit_at_1": 0.3517080745341615, "hit_at_5": 0.5481366459627329, "hit_at_10": 0.6180124223602484, "hit_at_20": 0.6902173913043478, "mrr": 0.44656817833483164, "mean_gold_rank": 33.00310559006211},
+    "b3": {"hit_at_1": 0.3447204968944099, "hit_at_5": 0.5372670807453416, "hit_at_10": 0.5978260869565217, "hit_at_20": 0.6677018633540373, "mrr": 0.4373243853365847, "mean_gold_rank": 35.17003105590062}
+  },
+  "qa": {
+    "b0": {"correct": 928, "accuracy": 0.5389082462253194, "hallucination": 364, "omission": 430, "qa_judge_tokens": 16773823},
+    "b1": {"correct": 947, "accuracy": 0.5499419279907085, "hallucination": 370, "omission": 405, "qa_judge_tokens": 16634795},
+    "b2": {"correct": 923, "accuracy": 0.5360046457607434, "hallucination": 363, "omission": 436, "qa_judge_tokens": 16634938},
+    "b3": {"correct": 930, "accuracy": 0.5400696864111498, "hallucination": 360, "omission": 432, "qa_judge_tokens": 16509960}
+  }
+}

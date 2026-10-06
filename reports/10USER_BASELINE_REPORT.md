@@ -1,4 +1,6 @@
-# HaluMem-Medium 10-user B0/B1/B2/B3 Baseline
+# HaluMem-Medium 10-user B0/B1/B2/B3 Baseline（历史 v1，已失效）
+
+> 本文件和 `artifacts/10user/` 保留用于审计。该次运行的 embedding vector store 全部为零向量，因此其中的 retrieval/QA 指标不能作为有效 baseline。修复后的结果见 [`10USER_V2_REPAIRED_REPORT.md`](10USER_V2_REPAIRED_REPORT.md)。
 
 ## 数据与模型
 
