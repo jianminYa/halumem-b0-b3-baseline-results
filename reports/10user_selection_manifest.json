@@ -1,0 +1,16 @@
+{
+  "dataset": "HaluMem-Medium",
+  "subset": "10-user evaluation snapshot",
+  "users": 10,
+  "sessions": 680,
+  "messages": 29722,
+  "questions": 1722,
+  "evidence_entries": 2306,
+  "questions_without_evidence": 434,
+  "llm_model": "gpt-4o-mini",
+  "embedding_model": "text-embedding-3-small",
+  "retrieval_top_k": 20,
+  "qa_repeats": 3,
+  "qa_context_top_k": 20,
+  "construction_note": "The published memory_units files are the artifacts used by this 10-user evaluation snapshot. Exact provider-token attribution is not available at the individual subset level and is not fabricated."
+}

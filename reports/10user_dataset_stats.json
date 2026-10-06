@@ -1,0 +1,72 @@
+{
+  "processed_files": 10,
+  "users": 10,
+  "sessions": 680,
+  "messages": 29722,
+  "questions": 1722,
+  "evidence_entries": 2306,
+  "questions_without_evidence": 434,
+  "difficulty_counts": {
+    "easy": 980,
+    "hard": 49,
+    "medium": 693
+  },
+  "evidence_type_counts": {
+    "Event Memory": 764,
+    "Persona Memory": 1401,
+    "Relationship Memory": 119,
+    "[Dec 01, 2037, 22:12:52][Relationship Memory]": 1,
+    "[Event Memory]": 1,
+    "[Feb 01, 2038, 21:35:21][Relationship Memory]": 1,
+    "[Feb 15, 2035, 07:46:36][Persona Memory]": 1,
+    "[Jun 19, 2037, 16:19:00][Event Memory]": 1,
+    "[Jun 19, 2037, 16:19:00][Persona Memory]": 1,
+    "[Jun 19, 2037, 16:19:00][Relationship Memory]": 1,
+    "[Mar 19, 2038, 21:31:06][Event Memory]": 2,
+    "[Persona Memory]": 11,
+    "[Sep 01, 2037, 21:19:03][Event Memory]": 1,
+    "[Sep 01, 2037, 21:19:03][Relationship Memory]": 1
+  },
+  "source_files": [
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/1b846c59-456e-9550-dffd-4d23f1eca81f.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_1b846c59.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/2e36c193-a605-8cc7-70ff-80b2336d4980.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_2e36c193.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/2f1f897e-d67f-dbc5-6a7b-b7634a9e294f.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_2f1f897e.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/2f4b4206-20bc-19a5-a5ed-4d110f91f4db.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_2f4b4206.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/348492a7-cfe4-ee1d-73c3-c276d6ba8277.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_348492a7.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/42f702e3-750c-1acc-9101-051f1f75991e.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_42f702e3.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/4fd09df4-d0df-ff7e-bb39-5f4faedfac2c.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_4fd09df4.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/52e6d9cd-f63e-4065-cbaf-a20347590e07.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_52e6d9cd.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/5c005ed8-0d18-99f8-a20e-6a776a7ea30a.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_5c005ed8.json"
+    },
+    {
+      "processed": "/workspace/SA-mem/halumem-b0-b3-runs-10user-v1/metadata/processed_halumem_iso/6106afc1-6ad6-c821-3f0f-b491e3e0b833.json",
+      "qa": "/workspace/SA-mem/SA-Mem/data/data/qa_6106afc1.json"
+    }
+  ]
+}
