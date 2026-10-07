@@ -81,6 +81,8 @@ B1 相比 B0 的完整中文流程、输入输出字段、本地 temporal resolv
 
 [docs/B1_VS_B0_PIPELINE_CN.md](docs/B1_VS_B0_PIPELINE_CN.md)
 
+B1 实际源码快照位于 [`code/b1/`](code/b1/)，包括构建集成文件和 temporal resolver。
+
 该文档特别区分了：
 
 - B1 的 Pass1 中间输出与 B0 的差异；
