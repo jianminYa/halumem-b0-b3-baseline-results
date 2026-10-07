@@ -75,6 +75,20 @@ PY
 rg '"qa_idx": 1' artifacts/10user-v2/b0/qa_results_1repeat.jsonl
 ```
 
+## B1 流程说明
+
+B1 相比 B0 的完整中文流程、输入输出字段、本地 temporal resolver、fallback 条件和实际示例，见：
+
+[docs/B1_VS_B0_PIPELINE_CN.md](docs/B1_VS_B0_PIPELINE_CN.md)
+
+该文档特别区分了：
+
+- B1 的 Pass1 中间输出与 B0 的差异；
+- local resolver 的零 token 本地计算；
+- 哪些情况直接 local resolve；
+- 哪些情况回退到 B0 的 tool + follow-up；
+- B1 如何继续复用原有 Pass2 和最终 Memory schema。
+
 ## Retrieval 指标口径
 
 HaluMem cleaned evidence 使用字典结构 `memory_content/memory_type`，而原生 adapter 的 `target_boxes` 解析器仍期待旧式字符串 evidence。因此原始 retrieval JSONL 中的 `target_boxes` 不能直接用于 Hit@K。
