@@ -86,19 +86,21 @@ QA model/prompt = 当前 baseline 参数
 token。因此需要区分 source construction token 与 v2 retrieval/QA 结果，不能把
 v2 的新增 construction cost 写成一次完整重建。
 
-## 真实源码位置
+## 真实源码位置与审阅入口
 
-B3 的实现位于 SA-Mem-core 的 B0–B3 集成实验 branch：
+这里需要明确区分“核心算法代码”和“实验开关”：B3 的 merged extraction 核心
+代码已经存在于 sanitized `main`，不是 `halumem-b0-b3-auto-urlfix` 新增的独立
+算法。B3 实验通过 runner 将 `MEMBLOCK_MERGED_EXTRACTION=1` 打开。
 
-- [SA-Mem-core B0–B3 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)
-- [branch tip `b18bf77`](https://github.com/jianminYa/SA-Mem-core/commit/b18bf7727e0178e3a316fa01903541d2061716e9)
-- [与 main 的完整 compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
+推荐按下面顺序阅读：
 
-建议按下面顺序阅读：
+1. [B3 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b3-core-view)：只展示 B3 variant 的开关入口；
+2. [B2 → B3 incremental compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b2-core-view...halumem-b3-core-view)：只包含 `scripts/run_halumem_variant.sh`；
+3. [`build_prompts.py` merged prompt（main）](https://github.com/jianminYa/SA-Mem-core/blob/main/build_prompts.py#L73-L150)；
+4. [`build_impl_graph.py` merged dispatch（main）](https://github.com/jianminYa/SA-Mem-core/blob/main/build_impl_graph.py#L201-L245)；
+5. [`memblock_extractor.py` merged 开关（main）](https://github.com/jianminYa/SA-Mem-core/blob/main/memblock_extractor.py#L449-L459)。
 
-1. `scripts/run_halumem_variant.sh`：确认 `b3` 到 merged/local/gate 开关的映射；
-2. `memblock_extractor.py`：确认 merged dispatch、请求和 token instrumentation；
-3. `build_prompts.py`：查看 merged prompt 定义；
-4. `build_impl_graph.py`：查看 merged 输出归一化和 MemBlock assembly。
+因此不应再使用 `main...halumem-b0-b3-auto-urlfix` 作为 B3 核心代码 compare；它
+是包含 runner、报告和实验 artifacts 的集成分支。
 
 本结果仓库的模块导航见 [`code/b3/MODULE_MAP_CN.md`](../code/b3/MODULE_MAP_CN.md)。

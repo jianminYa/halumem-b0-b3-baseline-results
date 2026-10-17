@@ -33,8 +33,12 @@ variant b3
 
 源码入口：
 
-- [SA-Mem-core B0–B3 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)
-- [完整 compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
+- [B3 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b3-core-view)
+- [B2 → B3 incremental compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b2-core-view...halumem-b3-core-view)
+- [merged prompt in `main`](https://github.com/jianminYa/SA-Mem-core/blob/main/build_prompts.py#L73-L150)
+- [merged dispatch in `main`](https://github.com/jianminYa/SA-Mem-core/blob/main/build_impl_graph.py#L201-L245)
+- [B3 variant switch](https://github.com/jianminYa/SA-Mem-core/blob/halumem-b3-core-view/scripts/run_halumem_variant.sh#L34-L73)
 
-结果仓库的 B3 分支是文档/结果视图，不是另一个源码 fork；需要查看逐行代码
-差异时，应在上面的 SA-Mem-core branch 和 compare 页面中进行。
+B3 相对当前 sanitized `main` 没有新增一套 merged extraction 核心算法；本次
+实验的 B3 变量是配置开关。结果仓库的 B3 分支是文档/结果视图，不是另一个
+源码 fork；需要查看逐行代码差异时，应使用上面的文件链接和 incremental compare。
