@@ -13,6 +13,6 @@ branch，结果仓库不复制另一份容易漂移的源码。
 
 源码入口：
 
-- [SA-Mem-core B0–B3 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)
-- [B2 branch tip `b18bf77`](https://github.com/jianminYa/SA-Mem-core/commit/b18bf7727e0178e3a316fa01903541d2061716e9)
-- [完整 compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
+- [B2 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b2-core-view)
+- [B1 → B2 incremental compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b1-core-view...halumem-b2-core-view)
+- [B2 gate commit `5a10d72`](https://github.com/jianminYa/SA-Mem-core/commit/5a10d722a3995e4b6d1548b5fcd5317a06da1807)

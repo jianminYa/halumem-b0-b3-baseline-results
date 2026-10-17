@@ -53,11 +53,14 @@ follow-up，方便对账 construction token。
 
 实现所在的 SA-Mem-core branch：
 
-- [HaluMem B0–B3 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)
-- [B2 implementation compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
+- [B2 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b2-core-view)
+- [B1 → B2 incremental core compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b1-core-view...halumem-b2-core-view)
+- [B2 gate implementation commit `5a10d72`](https://github.com/jianminYa/SA-Mem-core/commit/5a10d722a3995e4b6d1548b5fcd5317a06da1807)
+- [B2 detector recall patch `1d4f097`](https://github.com/jianminYa/SA-Mem-core/commit/1d4f097a95607353d33208b4d3b36eaba7f28246)
 
-注意：该 SA-Mem-core branch 是 B0/B1/B2/B3 的集成实验 branch，不是只含 B2 的
-最小 patch；阅读时应重点看上表文件以及 `MEMBLOCK_TEMPORAL_GATE_B2`。
+这个 incremental compare 只包含 `build_impl_graph.py` 和 `memblock_extractor.py`
+的 gate 变化。原来的 `halumem-b0-b3-auto-urlfix` 仍保留作实验集成分支，但不再
+作为核心代码审阅入口。
 
 ## 结果文件如何查看
 
