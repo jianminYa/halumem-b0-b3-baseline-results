@@ -110,3 +110,36 @@ QA token 仅属于 QA/judge 阶段，不计入 construction cost。
 修复后详细表格见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)；旧版审计说明见 [`reports/10USER_BASELINE_REPORT.md`](reports/10USER_BASELINE_REPORT.md)。
 
 本仓库只发布 10-user evaluation snapshot；后续若扩大数据规模，应建立新的 release，而不是覆盖本版本 artifacts。v2 的详细结果见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)。
+
+## B3 分支说明：Merged Extraction
+
+当前分支用于说明 B3 的流程和代码定位；实验结果仍位于
+[`artifacts/10user-v2/b3/`](artifacts/10user-v2/b3/)。B3 是独立于 B1/B2 的
+构建路径，不会把 B1 的 local resolver 或 B2 的 temporal gate 叠加进去。
+
+```text
+B0: Pass1 topic/keywords/mentions
+    → temporal tool + follow-up
+    → Pass2 event classification / temporal metadata
+    → MemBlock
+
+B3: merged extraction request
+    → topic / keywords / events / temporal metadata
+    → normal MemBlock assembly
+```
+
+B3 的目标是把原本两阶段的抽取提示合并为一个 construction 主阶段，用于比较
+token 和端到端效果。实际是否产生 tool call 以 provider 记录为准；B3 并不宣称
+所有输入都绝对没有 tool call。B3 的开关为：
+
+```text
+MEMBLOCK_MERGED_EXTRACTION=1
+MEMBLOCK_LOCAL_TEMPORAL_RESOLUTION=0
+MEMBLOCK_TEMPORAL_GATE_B2=0
+```
+
+详细的输入、输出、开关和模块说明见
+[`docs/B3_PIPELINE_CN.md`](docs/B3_PIPELINE_CN.md)，源码入口导航见
+[`code/b3/MODULE_MAP_CN.md`](code/b3/MODULE_MAP_CN.md)。真实实现保存在
+SA-Mem-core 的集成 branch；本结果仓库只保存结果和导航文档，避免复制一份会
+逐渐漂移的源码。
