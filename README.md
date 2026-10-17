@@ -117,6 +117,7 @@ QA token 仅属于 QA/judge 阶段，不计入 construction cost。
 [SA-Mem-core `halumem-b0-b3-auto-urlfix`](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)，本仓库保存结果、流程说明和源码定位信息。
 
 - 中文流程：[`docs/B2_PIPELINE_CN.md`](docs/B2_PIPELINE_CN.md)
+- 四版本构建阶段与真实样本：[`docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md`](docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md)
 - 模块定位：[`code/b2/MODULE_MAP_CN.md`](code/b2/MODULE_MAP_CN.md)
 - B2 结果：[`artifacts/10user-v2/b2/`](artifacts/10user-v2/b2/)
-- B2 实现分支 diff：[SA-Mem-core compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
+- B2 核心代码 diff：[SA-Mem-core incremental compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b1-core-view...halumem-b2-core-view)
