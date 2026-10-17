@@ -835,6 +835,97 @@ Yesterday marked the official launch of GreenWave Innovations, and I couldn't be
 
 </details>
 
+### Pass2 的真实 request / response：B0 与 B1 对照
+
+下面是对同一批 replay mentions 重新执行的真实 Pass2 API 调用。它可以直接看出：
+
+- B0/B2 的 request 传入 follow-up 生成的普通 mentions；
+- B1 的 request 传入已经由本地 resolver 追加日期的 mentions；
+- 两者使用相同的 Pass2 prompt、模型、temperature 和 JSON response format。
+
+这次 replay 的 Pass2 request 外层结构都是：
+
+```json
+{
+  "model": "gpt-4o-mini",
+  "temperature": 0,
+  "response_format": {"type": "json_object"},
+  "messages": [
+    {
+      "role": "user",
+      "content": "<PROMPT_DIALOG_CLASSIFICATION + session window + 下面的 Mentions JSON>"
+    }
+  ]
+}
+```
+
+<details>
+<summary>展开查看 B0/B2 Pass2 request 的实际 Mentions JSON</summary>
+
+```json
+[
+  "Williams Donna launched GreenWave Innovations on February 1, 2036.",
+  "Williams Donna felt incredible support from industry leaders during the launch of GreenWave Innovations.",
+  "Williams Donna is optimistic about the future (2036-02-02).",
+  "Williams Donna's commitment to sustainability and innovation is reflected in GreenWave's mission.",
+  "Williams Donna aims to develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.",
+  "Williams Donna is driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.",
+  "Williams Donna's target metrics include establishing 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production."
+]
+```
+
+真实 B0/B2 Pass2 response：
+
+```json
+{
+  "explicit_mentions": [
+    {"description": "Williams Donna launched GreenWave Innovations on February 1, 2036.", "start_time": "2036-02-01", "end_time": "2036-02-01", "type": "OCCURRENCE"},
+    {"description": "Williams Donna felt incredible support from industry leaders during the launch of GreenWave Innovations.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "Williams Donna is optimistic about the future.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "Williams Donna's commitment to sustainability and innovation is reflected in GreenWave's mission.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "ATTRIBUTE"},
+    {"description": "Williams Donna aims to develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "INTENTION"},
+    {"description": "Williams Donna is driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "Williams Donna's target metrics include establishing 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "INTENTION"}
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary>展开查看 B1 Pass2 request 的实际 Mentions JSON 与 response</summary>
+
+```json
+[
+  "Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out. (Yesterday (2036-02-01))",
+  "The support from industry leaders was incredible.",
+  "I'm feeling optimistic about the future.",
+  "The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission.",
+  "We've worked hard to ensure our solutions are both innovative and sustainable."
+]
+```
+
+真实 B1 Pass2 response：
+
+```json
+{
+  "explicit_mentions": [
+    {"description": "Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out.", "start_time": "2036-02-01", "end_time": "2036-02-01", "type": "OCCURRENCE"},
+    {"description": "The support from industry leaders was incredible.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "I'm feeling optimistic about the future.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"},
+    {"description": "We've worked hard to ensure our solutions are both innovative and sustainable.", "start_time": "2036-02-01T22:02:50", "end_time": "2036-02-02T00:32:50", "type": "STATE"}
+  ]
+}
+```
+
+</details>
+
+这段对照也说明 B1 的 temporal 信息在进入 Pass2 前已经成为 mention 的一部分；B0/B2
+则由 follow-up LLM 先决定如何改写 mention，再交给同一个 Pass2。这个差异是“B1 QA
+提升可能来自 temporal mapping 更稳定”的主要机制假设，但仍需要更大规模、重复 QA
+和 relative-time 子集分析验证。
+
 ### B2：Gate OFF 的真实直接返回，Gate ON 复用 B0 tool path
 
 <details>
@@ -868,6 +959,24 @@ B0 tool path 的真实消息序列：Pass1 → tool → follow-up → Pass2。
 
 <details>
 <summary>展开查看真实 B3 merged extraction prompt 的有效主体</summary>
+
+本次 B3 replay 的 request 外层是：
+
+```json
+{
+  "model": "gpt-4o-mini",
+  "temperature": 0,
+  "response_format": {"type": "json_object"},
+  "tools": ["resolve_temporal_expression function schema"],
+  "tool_choice": "auto",
+  "messages": [
+    {"role": "user", "content": "<下面的 merged prompt + 完整 GreenWave raw block>"}
+  ]
+}
+```
+
+本次模型实际没有返回 `tool_calls`，所以 response 直接是下面的 merged JSON；如果
+provider 返回 tool calls，当前 `chat_completion()` 仍会执行 tool 并发送 follow-up。
 
 ```text
 Generate a structured analysis of the provided dialog. Perform ALL of the following tasks in ONE pass and return ONE JSON object.
@@ -1013,6 +1122,36 @@ B3 本次 replay 没有 tool call，直接返回一个同时包含 topic、keywo
   出现“首次只返回 tool_calls → follow-up”的两次请求。因此 B3 是否真正达到单次
   construction call，必须同时检查 `tool_calls` 和 provider call log，不能只看 prompt
   是否写成 merged。
+
+## 1.9 B0/B1/B2/B3 已有 HaluMem 实验结果
+
+下面使用仓库中的最新 `HALUMEM_10USER_V2_RESULTS.json`。这是 embedding path 修正后
+的结果：10 users、1722 questions；QA 为一次评测，retrieval 是 1288 个有 gold evidence
+问题的 post-hoc gold-session audit。construction 没有重新调用 provider，下面的 token
+是根据 source full run 和 10-user memory-unit 比例得到的 subset estimate，不是精确的
+10-user provider attribution。
+
+| Variant | Memory units | Construction tokens (estimated) | 相对 B0 | Hit@1 | Hit@5 | Hit@10 | Hit@20 | MRR | Mean gold rank | QA |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| B0 | 2,434 | 19,578,022 | — | 35.25% | 54.74% | 61.41% | 68.56% | 0.4479 | 32.85 | 928/1722 = 53.89% |
+| B1 | 2,405 | 15,304,975 | -21.83% | 34.32% | 53.49% | 59.86% | 67.08% | 0.4374 | 33.97 | 947/1722 = 54.99% |
+| B2 | 2,427 | 15,901,285 | -18.78% | 35.17% | 54.81% | 61.80% | 69.02% | 0.4466 | 33.00 | 923/1722 = 53.60% |
+| B3 | 2,445 | 14,613,505 | -25.36% | 34.47% | 53.73% | 59.78% | 66.77% | 0.4373 | 35.17 | 930/1722 = 54.01% |
+
+从这个结果只能提出一个**待验证解释**：B1 的 QA 比 B0 高 `1.10` 个百分点，但
+gold-session retrieval 反而略低（Hit@10：`59.86%` vs `61.41%`，MRR：`0.4374` vs
+`0.4479`）。因此 B1 的提升不太像单纯来自“召回了更多 gold session”，更可能部分
+来自 temporal expression 被 `mention_index` 显式绑定、日期被本地确定性回填后，进入
+memory/QA context 的时间信息更稳定。
+
+但这还不是因果结论，因为 QA 只有一次、B1/B0 的 memory 数量和内容也有差异。后续应
+在相同 question 上重复 QA，并单独统计包含 relative-time 的问题和 memory，才能验证
+“B1 的映射稳定性带来 QA 提升”这一假设。
+
+原始数据位置：
+
+- [`HALUMEM_10USER_V2_RESULTS.json`](../reports/HALUMEM_10USER_V2_RESULTS.json)
+- [`10USER_V2_REPAIRED_REPORT.md`](../reports/10USER_V2_REPAIRED_REPORT.md)
 
 ## 2. B0：原始 two-pass
 
