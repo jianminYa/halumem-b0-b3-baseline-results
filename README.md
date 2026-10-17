@@ -110,3 +110,13 @@ QA token 仅属于 QA/judge 阶段，不计入 construction cost。
 修复后详细表格见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)；旧版审计说明见 [`reports/10USER_BASELINE_REPORT.md`](reports/10USER_BASELINE_REPORT.md)。
 
 本仓库只发布 10-user evaluation snapshot；后续若扩大数据规模，应建立新的 release，而不是覆盖本版本 artifacts。v2 的详细结果见 [`reports/10USER_V2_REPAIRED_REPORT.md`](reports/10USER_V2_REPAIRED_REPORT.md)。
+
+## 当前分支：B2 temporal gate
+
+本分支用于从结果仓库直接查看 B2 相对 B0 的设计说明。正式实现固定在
+[SA-Mem-core `halumem-b0-b3-auto-urlfix`](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b0-b3-auto-urlfix)，本仓库保存结果、流程说明和源码定位信息。
+
+- 中文流程：[`docs/B2_PIPELINE_CN.md`](docs/B2_PIPELINE_CN.md)
+- 模块定位：[`code/b2/MODULE_MAP_CN.md`](code/b2/MODULE_MAP_CN.md)
+- B2 结果：[`artifacts/10user-v2/b2/`](artifacts/10user-v2/b2/)
+- B2 实现分支 diff：[SA-Mem-core compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b0-b3-auto-urlfix)
