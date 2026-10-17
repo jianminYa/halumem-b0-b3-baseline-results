@@ -16,6 +16,12 @@ session:   session_1
 block:     0
 ```
 
+> **关于 GitHub compare：** 本文件在 B1、B2、B3 分支中都保留，是为了让每个结果
+> 分支单独打开时也能读懂完整的 B0/B1/B2/B3 流程。因此它不是“当前分支相对上一分支
+> 的代码 diff”，在 compare 页面中不会显示为变化文件。要看算法变化，请看
+> `SA-Mem-core` 的 focused code compare；要看本文件的真实样本说明，请直接打开当前
+> 分支的 `docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md`。
+
 注意：`memory_units.jsonl` 保存的是最终归一化后的 MemoryBlock。当前 release
 没有保存每次 Pass1/Pass2 的完整 provider prompt 和 raw response，只保存了最终
 Memory、retrieval/QA 结果以及构建 token 统计。因此本文对中间阶段只展示真实
