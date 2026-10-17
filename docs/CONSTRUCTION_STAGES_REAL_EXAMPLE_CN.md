@@ -490,6 +490,461 @@ function schema；是否真的发生 tool call 必须看 provider log，不能�
 B1 仍是两阶段，只把 temporal follow-up 换成本地计算；B2 仍是 B0 两阶段，只减少
 不需要 temporal tool 的 block 上的 follow-up。
 
+## 1.7 小规模真实 API 重放：展开查看完整 prompt 与模型返回
+
+为了让读者能直接检查设计，而不是只看抽象 schema，我又用上面同一个真实
+`session_47 / block 180`，以及真实的 `session_1 / block 0`，按当前源码模板做了小规模
+API replay。模型配置为 `gpt-4o-mini`、`temperature=0`；下面的 response 是本次真实 API
+返回，不是手写示例。
+
+这次 replay 只用于生成可审计的输入/输出示例，不会覆盖或替换已有 B0/B1/B2/B3
+构建 artifact、token 统计或 QA 结果。
+
+说明两点：
+
+1. **B0 的“直接 JSON 返回”路径**：源码允许 provider 不返回 `tool_calls`，这时
+   `message.content` 直接就是 Pass1 JSON。为稳定展示这个分支，本次 replay 使用了
+   B0 完全相同的 prompt 和 tools schema，但显式设置 `tool_choice="none"`；因此它是
+   **B0 direct-path 的真实控制重放**，不是声称旧 B0 auto run 每个 block 都走过这条路径。
+2. **B0 的 tool 路径**：下面的 GreenWave 例子使用 `tool_choice="auto"`。它展示了
+   provider 首次返回 tool calls、Python 执行 resolver、再发送 follow-up 的完整实际结果。
+   这次 replay 还暴露出一个重要现象：模型可能对不存在于 raw block 的表达式也提出
+   tool call，正是 B2 gate / B1 显式 temporal mapping 要审计的问题。
+
+### B0 direct path：同一 Pass1 prompt，直接返回 JSON
+
+<details>
+<summary>展开查看真实 B0 Pass1 完整输入 prompt（session_1/block_0）</summary>
+
+```text
+Generate a structured analysis of the provided dialog by performing the following tasks.
+
+The dialog includes:
+- A session window: "Session window: <session_start> -> <session_end>" (treat session_end as the "observation time")
+- Timestamps for each message
+- A "Persona info:" line, which may include the user's name, e.g. "Name: Williams Daniel; ..."
+
+1) **Identifying salient keywords**
+Extract 3-8 most salient nouns, named entities, and key terminology that represent core concepts.
+Avoid generic words and prioritize specificity (e.g., "denim", "Paris", "Project X").
+
+2) **Determining the core topic**
+In one clear phrase, state the primary subject of the discussion based on the actual content.
+
+3) **Extracting atomic memory mentions**
+Identify and list ALL atomic memory mentions that are explicitly stated in the dialog and/or persona info, following these strict rules:
+
+3.1 **Grounding (verbatim / near-verbatim)**
+- Each mention MUST be directly grounded in the dialog text or the persona info line.
+- Do NOT infer new facts or add details not present in the text.
+
+3.2 **Atomicity**
+- Output each atomic mention as ONE standalone natural-language sentence.
+- Do NOT merge multiple facts into one mention.
+
+3.3 **What to include**
+Extract mentions for all explicitly stated items including:
+- Personality & traits (including MBTI and personality tags)
+- Emotional states & expressions (e.g., stress, gratitude, concern)
+- Preferences WITH the WHY/reason in the SAME sentence (if the reason is present)
+- Relationship / family status (e.g., married, single, no children)
+- Reflections / realizations
+- Past events/changes and explicit future plans/goals
+
+3.4 **Persona info extraction**
+- If a "Persona info:" line is present, extract ALL fields from persona info as separate mentions (even if not discussed in the dialog).
+- Pay special attention to: personality tags, relationship status, pet preferences + reasons, and life goals with full details.
+
+3.5 **Temporal Resolution**
+- You MUST use the <session_end> time as the current observation time to resolve any relative temporal expressions (e.g., "yesterday", "last week", "last Thursday").
+- IMPORTANT: Use the resolve_temporal_expression function to accurately calculate absolute dates from relative expressions. This ensures correct handling of weekdays, leap years, and month boundaries.
+- After any temporal reference in your extracted mention, add the fully-resolved absolute date or date range in parentheses using the result from the function.
+- Time Point Example: "...last Thursday (YYYY-MM-DD)."
+- Duration Example: "...last week (YYYY-MM-DD to YYYY-MM-DD)."
+
+3.6 **Naming & formatting rules**
+- Each mention MUST be a single sentence.
+- If the user's name is available, use the name in the mention instead of "User...".
+- If no name is available, use "User...".
+- Do NOT include JSON fields like start_time/end_time/type inside the mention sentence.
+
+**Output Format**
+Return a valid JSON object with the following exact keys:
+{
+  "keywords": ["keyword1", "keyword2",...],
+  "topic": "topic phrase",
+  "mentions": [
+    "One atomic mention sentence",
+    "Another atomic mention sentence"
+  ]
+}
+
+Content to analyze:
+Session window: 2025-09-04T09:27:31 -> 2025-09-04T11:57:31
+Persona info: [Recorded on Oct 04, 2025] Name: Williams Daniel; Gender: Male; Birth Date: 1984-06-16; Location: Philadelphia; Current Age: 41; Highest Degree: Bachelor; Major: Film Studies; MBTI: INTJ; Tags: Strategic Thinking, Independent, Perfectionist, Detail-Oriented; Life Goal Type: Achievement-Driven; Statement: Become a renowned director known for historically accurate films, winning multiple international awards.; Motivation: Inspired by a family background rich in history and a passion for storytelling, Williams aims to bring history to life through film.; Target Metrics: Direct 10 award-winning historical films, achieve recognition at major film festivals like Cannes and Sundance..
+Sep 04, 2025, 09:27:31 user: Hello! I'd like to share my basic personal information with you so you can better understand me and provide more thoughtful help in future conversations.
+Sep 04, 2025, 09:27:31 assistant: Hello! Nice to meet you. Please tell me your basic information.
+Sep 04, 2025, 09:30:58 user: My name is Williams Daniel, and I am a Male. I was born on 1984-06-16, and I am now 41 years old. I currently live in Philadelphia.
+Sep 04, 2025, 09:30:58 assistant: Can you tell me about your educational background?
+Sep 04, 2025, 09:43:52 user: Of course. My highest education level is Bachelor, and my major is Film Studies.
+```
+
+</details>
+
+<details>
+<summary>展开查看真实 B0 direct-path 模型返回</summary>
+
+本次请求的 `tool_choice` 是 `none`，因此没有 tool call，模型直接返回：
+
+```json
+{
+  "keywords": [
+    "Williams Daniel",
+    "Philadelphia",
+    "Film Studies",
+    "INTJ",
+    "historically accurate films",
+    "Cannes",
+    "Sundance",
+    "achievement-driven"
+  ],
+  "topic": "Personal information sharing and educational background",
+  "mentions": [
+    "Williams Daniel is a Male.",
+    "Williams Daniel was born on 1984-06-16.",
+    "Williams Daniel is now 41 years old.",
+    "Williams Daniel currently lives in Philadelphia.",
+    "Williams Daniel's highest education level is Bachelor.",
+    "Williams Daniel's major is Film Studies.",
+    "Williams Daniel's MBTI is INTJ.",
+    "Williams Daniel is achievement-driven and aims to become a renowned director known for historically accurate films, winning multiple international awards.",
+    "Williams Daniel is inspired by a family background rich in history and a passion for storytelling."
+  ]
+}
+```
+
+</details>
+
+### B0 tool path：首次返回 tool call，再 follow-up
+
+<details>
+<summary>展开查看真实 B0 tool-path 的完整消息序列</summary>
+
+这次使用同一个 `PROMPT_DIALOG_EXTRACT`，但 raw block 是上文的 GreenWave block，
+`tool_choice="auto"`。首次 assistant 返回的 tool calls 是：
+
+本次 user message 的 `Content to analyze` 实际是：
+
+```text
+Session window: 2036-02-01T22:02:50 -> 2036-02-02T00:32:50
+Persona info: [Recorded on Oct 04, 2025] Name: Williams Donna; Gender: Female; Birth Date: 1999-12-15; Location: Los Angeles; Current Age: 25; Highest Degree: Bachelor; Major: Business Administration; MBTI: ENTP; Tags: Innovative, Strategic Thinker, Entrepreneurial; Life Goal Type: Sustainability Advocate; Statement: Develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.; Motivation: Driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.; Target Metrics: Establish 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production..
+Feb 01, 2036, 22:02:50 user: Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out. The support from industry leaders was incredible.
+Feb 01, 2036, 22:02:50 assistant: Congratulations on the successful launch of GreenWave Innovations, Donna! It's fantastic to hear that industry leaders responded with enthusiasm, positioning you as a prominent figure in sustainable energy. Your commitment to sustainability and innovation truly shines through in GreenWave's mission. I remember you sharing anecdotes about the challenges and triumphs leading up to this moment, emphasizing your dedication to making a global environmental impact. However, I also recall hearing that your dialogue during the launch was filled with a sense of caution and uncertainty about the future of GreenWave Innovations. How are you feeling now about the direction of your company?
+Feb 01, 2036, 22:06:04 user: I'm feeling optimistic about the future. The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission. We've worked hard to ensure our solutions are both innovative and sustainable.
+```
+
+```json
+{
+  "tool_calls": [
+    {
+      "name": "resolve_temporal_expression",
+      "arguments": {
+        "expression": "yesterday",
+        "observation_time": "2036-02-02T00:32:50"
+      },
+      "python_result": {
+        "start_date": "2036-02-01",
+        "end_date": "2036-02-01",
+        "day_of_week": "Saturday",
+        "resolved_expression": "yesterday (2036-02-01)"
+      }
+    },
+    {
+      "name": "resolve_temporal_expression",
+      "arguments": {
+        "expression": "the future",
+        "observation_time": "2036-02-02T00:32:50"
+      },
+      "python_result": {
+        "start_date": "2036-02-02",
+        "end_date": "2036-02-02",
+        "day_of_week": "Saturday",
+        "resolved_expression": "the future (2036-02-02)",
+        "warning": "Could not parse expression 'the future', using observation time as fallback"
+      }
+    }
+  ]
+}
+```
+
+因此实际 follow-up messages 的结构是：
+
+```json
+[
+  {"role": "user", "content": "<上面完整 B0 prompt + GreenWave raw block>"},
+  {"role": "assistant", "tool_calls": ["<上面的两个 function calls>"]},
+  {"role": "tool", "content": "<yesterday 的 Python JSON>"},
+  {"role": "tool", "content": "<the future 的 Python JSON>"}
+]
+```
+
+然后移除 `tools/tool_choice`，再次发送这组 messages。真实 follow-up 返回为：
+
+```json
+{
+  "keywords": [
+    "GreenWave Innovations", "sustainability", "e-waste", "entrepreneurial",
+    "technology", "refurbishing centers", "industry leaders", "innovative solutions"
+  ],
+  "topic": "Launch of GreenWave Innovations and its sustainability mission",
+  "mentions": [
+    "Williams Donna launched GreenWave Innovations on February 1, 2036.",
+    "Williams Donna felt incredible support from industry leaders during the launch of GreenWave Innovations.",
+    "Williams Donna is optimistic about the future (2036-02-02).",
+    "Williams Donna's commitment to sustainability and innovation is reflected in GreenWave's mission.",
+    "Williams Donna aims to develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.",
+    "Williams Donna is driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.",
+    "Williams Donna's target metrics include establishing 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production."
+  ]
+}
+```
+
+这个真实 replay 也说明：B0 的 function calling 并不保证模型只请求 raw block 中确实
+出现的表达式；这里的 `the future` 触发了 resolver 的 warning fallback。旧 baseline
+没有把这类 raw tool payload 保存下来，所以这是新增的小测试证据，不是旧运行日志。
+
+</details>
+
+### B1：完整 local-temporal prompt 与真实返回
+
+<details>
+<summary>展开查看真实 B1 Pass1 完整输入 prompt</summary>
+
+```text
+Generate a structured analysis of the provided dialog.
+
+The dialog includes a session window line: "Session window: <session_start> -> <session_end>".
+Treat session_end as the observation time. It may also contain timestamps and a Persona info line.
+
+Return:
+1) 3-8 specific salient keywords;
+2) one clear core topic phrase;
+3) ALL atomic, directly grounded memory mentions as standalone sentences;
+4) a list of relative temporal expressions that occur in the extracted mentions. Do not resolve dates yourself and do not call any tool.
+
+Extraction rules:
+- Keep every mention verbatim or near-verbatim grounded in the dialog/persona.
+- Do not infer facts or merge multiple facts into one mention.
+- Include explicit traits, emotions, preferences and their stated reasons, relationships, reflections, past events, future plans, and every persona field as separate mentions.
+- Use the person's name when available; otherwise use User.
+- Preserve the original relative wording in the mention.
+- For each temporal expression, provide the zero-based mention_index of the mention containing it and the exact expression text. Include only explicit relative expressions such as "yesterday", "last week", "last Sunday", or "last month". If there are no such expressions, return an empty list.
+
+Output valid JSON with exactly these keys:
+{
+  "keywords": ["keyword1", "keyword2"],
+  "topic": "topic phrase",
+  "mentions": ["One atomic mention sentence"],
+  "temporal_expressions": [
+    {"mention_index": 0, "expression": "last Sunday"}
+  ]
+}
+
+Content to analyze:
+Session window: 2036-02-01T22:02:50 -> 2036-02-02T00:32:50
+Persona info: [Recorded on Oct 04, 2025] Name: Williams Donna; Gender: Female; Birth Date: 1999-12-15; Location: Los Angeles; Current Age: 25; Highest Degree: Bachelor; Major: Business Administration; MBTI: ENTP; Tags: Innovative, Strategic Thinker, Entrepreneurial; Life Goal Type: Sustainability Advocate; Statement: Develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.; Motivation: Driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.; Target Metrics: Establish 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production..
+Feb 01, 2036, 22:02:50 user: Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out. The support from industry leaders was incredible.
+Feb 01, 2036, 22:02:50 assistant: Congratulations on the successful launch of GreenWave Innovations, Donna! It's fantastic to hear that industry leaders responded with enthusiasm, positioning you as a prominent figure in sustainable energy. Your commitment to sustainability and innovation truly shines through in GreenWave's mission. I remember you sharing anecdotes about the challenges and triumphs leading up to this moment, emphasizing your dedication to making a global environmental impact. However, I also recall hearing that your dialogue during the launch was filled with a sense of caution and uncertainty about the future of GreenWave Innovations. How are you feeling now about the direction of your company?
+Feb 01, 2036, 22:06:04 user: I'm feeling optimistic about the future. The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission. We've worked hard to ensure our solutions are both innovative and sustainable.
+```
+
+这就是本次 replay 的完整 `Content to analyze`，代码通过
+`.replace("{text}", content_str)` 直接填入，没有截断或只保留 user message。
+
+</details>
+
+<details>
+<summary>展开查看真实 B1 Pass1 模型返回与 local resolver 输入输出</summary>
+
+真实 B1 Pass1 返回：
+
+```json
+{
+  "keywords": [
+    "GreenWave Innovations", "sustainability", "launch", "optimistic",
+    "industry leaders", "confidence", "innovative", "e-waste"
+  ],
+  "topic": "Launch of GreenWave Innovations",
+  "mentions": [
+    "Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out.",
+    "The support from industry leaders was incredible.",
+    "I'm feeling optimistic about the future.",
+    "The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission.",
+    "We've worked hard to ensure our solutions are both innovative and sustainable."
+  ],
+  "temporal_expressions": [
+    {"mention_index": 0, "expression": "Yesterday"}
+  ]
+}
+```
+
+随后本地 resolver 实际使用：
+
+```json
+{
+  "mention_index": 0,
+  "observation_time": "2036-02-02T00:32:50",
+  "expression": "Yesterday"
+}
+```
+
+返回：
+
+```json
+{
+  "start_date": "2036-02-01",
+  "end_date": "2036-02-01",
+  "resolved_expression": "Yesterday (2036-02-01)"
+}
+```
+
+Pass2 看到的对应 mention 变为：
+
+```text
+Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out. (Yesterday (2036-02-01))
+```
+
+</details>
+
+### B2：Gate OFF 的真实直接返回，Gate ON 复用 B0 tool path
+
+<details>
+<summary>展开查看 B2 Gate 与真实 direct response</summary>
+
+B2 Gate OFF 的真实日志：
+
+```json
+{
+  "stage": "temporal_gate",
+  "session_id": "session_1",
+  "block_id": 0,
+  "temporal_gate_on": false,
+  "temporal_gate_reason": "no_relative_temporal_expression_detected",
+  "temporal_tool_called": false,
+  "pass1_tool_followup": false,
+  "usage_source": "local_gate_no_llm"
+}
+```
+
+Gate OFF 发送的 LLM 请求仍是完整 B0 prompt + raw block，只是额外设置
+`tool_choice="none"`。因此它的真实返回就是上面 B0 direct-path 的 JSON；B2 没有
+改变 `keywords/topic/mentions` schema。
+
+Gate ON 时不改 prompt/schema，也不使用 B1 的 `temporal_expressions`，而是复用上面
+B0 tool path 的真实消息序列：Pass1 → tool → follow-up → Pass2。
+
+</details>
+
+### B3：完整 merged prompt 与真实返回
+
+<details>
+<summary>展开查看真实 B3 merged extraction prompt 的有效主体</summary>
+
+```text
+Generate a structured analysis of the provided dialog. Perform ALL of the following tasks in ONE pass and return ONE JSON object.
+
+The dialog includes:
+- A session window: "Session window: <session_start> -> <session_end>" (treat session_end as the "observation time")
+- Timestamps for each message
+- An optional "Persona info:" line
+
+1) keywords: 3-8 most salient nouns / named entities / key terminology.
+2) topic: ONE clear phrase stating the primary subject of the dialog.
+3) events: atomic memory items grounded in the dialog/persona info.
+   Each event contains:
+   - description
+   - type: OCCURRENCE | STATE | ATTRIBUTE | INTENTION
+   - start_time
+   - end_time
+   Relative expressions are resolved against the session end.
+
+Output Format:
+{
+  "keywords": ["keyword1", "keyword2"],
+  "topic": "topic phrase",
+  "events": [
+    {
+      "description": "One atomic sentence",
+      "type": "OCCURRENCE|STATE|ATTRIBUTE|INTENTION",
+      "start_time": "YYYY-MM-DD or 2036-02-01T22:02:50",
+      "end_time": "YYYY-MM-DD or 2036-02-02T00:32:50"
+    }
+  ]
+}
+
+Content to analyze:
+Session window: 2036-02-01T22:02:50 -> 2036-02-02T00:32:50
+Persona info: [Recorded on Oct 04, 2025] Name: Williams Donna; Gender: Female; Birth Date: 1999-12-15; Location: Los Angeles; Current Age: 25; Highest Degree: Bachelor; Major: Business Administration; MBTI: ENTP; Tags: Innovative, Strategic Thinker, Entrepreneurial; Life Goal Type: Sustainability Advocate; Statement: Develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.; Motivation: Driven by a passion for technology and sustainability, inspired by her father's engineering background and her own entrepreneurial spirit.; Target Metrics: Establish 100 refurbishing centers globally, achieving a reduction of 50% in e-waste production..
+Feb 01, 2036, 22:02:50 user: Yesterday marked the official launch of GreenWave Innovations, and I couldn't be happier with how everything turned out. The support from industry leaders was incredible.
+Feb 01, 2036, 22:02:50 assistant: Congratulations on the successful launch of GreenWave Innovations, Donna! It's fantastic to hear that industry leaders responded with enthusiasm, positioning you as a prominent figure in sustainable energy. Your commitment to sustainability and innovation truly shines through in GreenWave's mission. I remember you sharing anecdotes about the challenges and triumphs leading up to this moment, emphasizing your dedication to making a global environmental impact. However, I also recall hearing that your dialogue during the launch was filled with a sense of caution and uncertainty about the future of GreenWave Innovations. How are you feeling now about the direction of your company?
+Feb 01, 2036, 22:06:04 user: I'm feeling optimistic about the future. The enthusiasm from industry leaders has reinforced my confidence in GreenWave's mission. We've worked hard to ensure our solutions are both innovative and sustainable.
+```
+
+</details>
+
+<details>
+<summary>展开查看真实 B3 merged 模型返回</summary>
+
+B3 本次 replay 没有 tool call，直接返回一个同时包含 topic、keywords、events 和时间字段
+的 JSON：
+
+```json
+{
+  "keywords": [
+    "GreenWave Innovations", "sustainability", "e-waste",
+    "entrepreneurial", "technology", "industry leaders"
+  ],
+  "topic": "Launch of GreenWave Innovations and its impact on sustainability",
+  "events": [
+    {
+      "description": "Williams Donna launched GreenWave Innovations.",
+      "type": "OCCURRENCE",
+      "start_time": "2036-02-01T22:02:50",
+      "end_time": "2036-02-02T00:32:50"
+    },
+    {
+      "description": "Williams Donna feels optimistic about the future of GreenWave Innovations.",
+      "type": "STATE",
+      "start_time": "2036-02-01T22:02:50",
+      "end_time": "2036-02-02T00:32:50"
+    },
+    {
+      "description": "Williams Donna is driven by a passion for technology and sustainability.",
+      "type": "ATTRIBUTE",
+      "start_time": "2036-02-01T22:02:50",
+      "end_time": "2036-02-02T00:32:50"
+    },
+    {
+      "description": "Williams Donna's life goal is to develop a global network for refurbishing and reselling electronic devices, reducing e-waste by 50% worldwide.",
+      "type": "INTENTION",
+      "start_time": "2036-02-01T22:02:50",
+      "end_time": "2036-02-02T00:32:50"
+    },
+    {
+      "description": "Williams Donna's MBTI is ENTP.",
+      "type": "ATTRIBUTE",
+      "start_time": "2036-02-01T22:02:50",
+      "end_time": "2036-02-02T00:32:50"
+    }
+  ]
+}
+```
+
+这是 merged LLM 的原始 response 形态；之后仍由已有 Python normalization/assembly 转成
+仓库中的 `event_id`、`time_metadata`、`temporal_index` 等字段。
+
+</details>
+
 ## 2. B0：原始 two-pass
 
 ### 配置
