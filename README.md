@@ -117,6 +117,7 @@ QA token 仅属于 QA/judge 阶段，不计入 construction cost。
 [SA-Mem-core `halumem-b1-local-temporal`](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-local-temporal)，本仓库只保存结果、流程说明和源码定位信息，避免复制出可能过期的源码。
 
 - 中文流程：[`docs/B1_PIPELINE_CN.md`](docs/B1_PIPELINE_CN.md)
+- 四版本构建阶段与真实样本：[`docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md`](docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md)
 - 模块定位：[`code/b1/MODULE_MAP_CN.md`](code/b1/MODULE_MAP_CN.md)
 - B1 结果：[`artifacts/10user-v2/b1/`](artifacts/10user-v2/b1/)
 - B1 相对 B0 的代码 diff：[SA-Mem-core compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b1-local-temporal)
