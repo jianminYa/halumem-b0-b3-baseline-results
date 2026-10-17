@@ -140,6 +140,8 @@ MEMBLOCK_TEMPORAL_GATE_B2=0
 
 详细的输入、输出、开关和模块说明见
 [`docs/B3_PIPELINE_CN.md`](docs/B3_PIPELINE_CN.md)，源码入口导航见
-[`code/b3/MODULE_MAP_CN.md`](code/b3/MODULE_MAP_CN.md)。真实实现保存在
-SA-Mem-core 的集成 branch；本结果仓库只保存结果和导航文档，避免复制一份会
-逐渐漂移的源码。
+[`code/b3/MODULE_MAP_CN.md`](code/b3/MODULE_MAP_CN.md)。
+
+- 四版本构建阶段与真实样本：[`docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md`](docs/CONSTRUCTION_STAGES_REAL_EXAMPLE_CN.md)
+- B3 结果：[`artifacts/10user-v2/b3/`](artifacts/10user-v2/b3/)
+- B3 核心配置 diff：[SA-Mem-core incremental compare](https://github.com/jianminYa/SA-Mem-core/compare/halumem-b2-core-view...halumem-b3-core-view)
