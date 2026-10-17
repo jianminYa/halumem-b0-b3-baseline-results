@@ -645,46 +645,65 @@ Feb 01, 2036, 22:06:04 user: I'm feeling optimistic about the future. The enthus
 
 ```json
 {
+  "role": "assistant",
+  "content": null,
   "tool_calls": [
     {
-      "name": "resolve_temporal_expression",
-      "arguments": {
-        "expression": "yesterday",
-        "observation_time": "2036-02-02T00:32:50"
+      "id": "call_axVgoGrEQ2rYcq0kTe139DJ2",
+      "type": "function",
+      "function": {
+        "name": "resolve_temporal_expression",
+        "arguments": "{\"expression\": \"yesterday\", \"observation_time\": \"2036-02-02T00:32:50\"}"
       },
-      "python_result": {
-        "start_date": "2036-02-01",
-        "end_date": "2036-02-01",
-        "day_of_week": "Saturday",
-        "resolved_expression": "yesterday (2036-02-01)"
-      }
     },
     {
-      "name": "resolve_temporal_expression",
-      "arguments": {
-        "expression": "the future",
-        "observation_time": "2036-02-02T00:32:50"
-      },
-      "python_result": {
-        "start_date": "2036-02-02",
-        "end_date": "2036-02-02",
-        "day_of_week": "Saturday",
-        "resolved_expression": "the future (2036-02-02)",
-        "warning": "Could not parse expression 'the future', using observation time as fallback"
+      "id": "call_dVieHdN7sbBOmzJix79xFD7k",
+      "type": "function",
+      "function": {
+        "name": "resolve_temporal_expression",
+        "arguments": "{\"expression\": \"the future\", \"observation_time\": \"2036-02-02T00:32:50\"}"
       }
     }
   ]
 }
 ```
 
+这里最重要的是：首次 response 的 `content` 是 `null`，没有 `keywords`、`topic` 或
+`mentions`。它只是一个“请执行下面两个函数”的请求。上面的 call id 来自本次 replay；
+旧 baseline 没有保存这些 provider message。
+
+Python 执行函数后，才追加下面两个 tool messages。注意 `tool_call_id` 必须与 assistant
+response 中对应的 `id` 相同：
+
+```json
+{
+  "role": "tool",
+  "tool_call_id": "call_axVgoGrEQ2rYcq0kTe139DJ2",
+  "content": "{\"start_date\": \"2036-02-01\", \"end_date\": \"2036-02-01\", \"day_of_week\": \"Saturday\", \"resolved_expression\": \"yesterday (2036-02-01)\"}"
+}
+```
+
+```json
+{
+  "role": "tool",
+  "tool_call_id": "call_dVieHdN7sbBOmzJix79xFD7k",
+  "content": "{\"start_date\": \"2036-02-02\", \"end_date\": \"2036-02-02\", \"day_of_week\": \"Saturday\", \"resolved_expression\": \"the future (2036-02-02)\", \"warning\": \"Could not parse expression 'the future', using observation time as fallback\"}"
+}
+```
+
+所以你提到的 `yesterday (2036-02-01)` 确实存在，但它位于第二阶段的
+`tool.content` JSON 中，而不是首次 assistant response，也不是 Python 自动写回的
+`mentions` 字段。当前 B0 代码只是把这个 tool JSON 追加到 messages；真正把它写进
+最终 mention 的动作发生在 follow-up LLM 输出中。
+
 因此实际 follow-up messages 的结构是：
 
 ```json
 [
   {"role": "user", "content": "<上面完整 B0 prompt + GreenWave raw block>"},
-  {"role": "assistant", "tool_calls": ["<上面的两个 function calls>"]},
-  {"role": "tool", "content": "<yesterday 的 Python JSON>"},
-  {"role": "tool", "content": "<the future 的 Python JSON>"}
+  {"role": "assistant", "content": null, "tool_calls": ["<上面的两个 function calls>"]},
+  {"role": "tool", "tool_call_id": "call_axVgoGrEQ2rYcq0kTe139DJ2", "content": "<yesterday 的 Python JSON>"},
+  {"role": "tool", "tool_call_id": "call_dVieHdN7sbBOmzJix79xFD7k", "content": "<the future 的 Python JSON>"}
 ]
 ```
 
@@ -944,6 +963,56 @@ B3 本次 replay 没有 tool call，直接返回一个同时包含 topic、keywo
 仓库中的 `event_id`、`time_metadata`、`temporal_index` 等字段。
 
 </details>
+
+### B0 如何知道每个日期对应哪个 mention？
+
+这里要区分两种“对应关系”：
+
+1. **tool result 对应哪个 tool call**：由 `tool_call_id` 明确关联。每个 `tool`
+   message 都带有对应 assistant tool call 的 id，因此 API 消息层不会把
+   `yesterday` 的结果和 `the future` 的结果交换。
+2. **tool call 对应原文中的哪个 mention**：B0 没有显式的 `mention_index` 或
+   `mention_id`。当前 resolver 的函数参数只有：
+
+   ```json
+   {"observation_time": "...", "expression": "..."}
+   ```
+
+   它不接收 mention 编号，也不返回 mention 编号。follow-up LLM 重新看到完整 raw
+   prompt、自己之前提出的表达式、tool call 顺序和 tool result，然后依靠模型推理把
+   日期写回 mentions。因此 B0 是：
+
+   ```text
+   tool_call_id：API 层确定
+   expression → 原文 mention：由 follow-up LLM 根据上下文推理
+   ```
+
+   如果两个不同 session 分别有“明天”，它们通常是两个独立 block 请求，且各自的
+   `observation_time=session_end` 不同，所以 resolver 返回的日期可以不同。若同一个
+   block 内有多个相对时间表达式，B0 仍主要依赖 tool call 顺序和 follow-up 模型理解，
+   没有代码级 mention 映射保证。
+
+   B1 的 `temporal_expressions: [{"mention_index": 0, "expression": "Yesterday"}]`
+   正是为了补上这个确定性映射；B1 在 Python 中按 index 回填，B0/B2 原始路径没有
+   这层保证。
+
+   这也是为什么“把 Pass1 和 Pass2 合并”不能简单理解为“把 tool result 拼进 prompt
+   就结束”：如果 merged request 仍允许 function calling，它首次仍可能只返回
+   `tool_calls`，随后仍需要 follow-up；只有禁止 tool，或把 temporal resolution 放在
+   LLM 请求之前本地完成，才是真正意义上的单次最终 JSON 返回。
+
+## 1.8 对 B0/B1/B2/B3 设计含义的结论
+
+- B0 的 tool-use 首次 response 没有抽取结果，只有函数调用请求；所以 B0 的主要额外
+  成本来自 follow-up 重新携带上下文并生成完整 Pass1 JSON。
+- B1 把“表达式属于哪个 mention”显式编码为 `mention_index`，因此本地 resolver
+  可以确定性回填，不需要再让 follow-up LLM 做这个映射。
+- B2 不改变 B0 的映射机制；它只是 Gate OFF 时禁止 tool，Gate ON 时仍保留 B0 的
+  原始不确定性。
+- B3 即使把 Pass1/Pass2 字段放进一个 prompt，只要仍允许 tool calling，就仍可能
+  出现“首次只返回 tool_calls → follow-up”的两次请求。因此 B3 是否真正达到单次
+  construction call，必须同时检查 `tool_calls` 和 provider call log，不能只看 prompt
+  是否写成 merged。
 
 ## 2. B0：原始 two-pass
 
