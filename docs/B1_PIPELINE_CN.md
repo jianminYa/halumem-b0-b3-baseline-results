@@ -49,10 +49,15 @@ B1 不启用 B2 gate，也不启用 B3 merged extraction。
 | `memblock_extractor.py` | 配置开关、LLM/tool 调用、Pass2 和 token instrumentation |
 | `scripts/run_halumem_variant.sh` | 实验 runner 中的 variant 开关映射 |
 
-精确源码以 SA-Mem-core commit `510d0f3` 为准：
+精确源码以 SA-Mem-core commit `510d0f3` 为准。为了避免把实验 runner、报告和
+artifacts 混进代码审阅，推荐使用只包含核心源码的 view branch：
 
-- [B1 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-local-temporal)
-- [B1 vs main diff](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b1-local-temporal)
+- [B1 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-core-view)
+- [B1 core vs main compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b1-core-view)
+- [原始 B1 实验 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-local-temporal)
+
+core view compare 只包含 `build_impl_graph.py`、`build_prompts.py` 和
+`memblock_extractor.py` 三个核心文件；B1 实验结果和 runner 仍在本结果仓库中。
 
 ## 结果文件如何查看
 

@@ -10,8 +10,8 @@ commit 和 compare 页面审计真实实现。
 | `temporal_resolution_tool.py` | `resolve_temporal_expression()` |
 | `memblock_extractor.py` | `ENABLE_LOCAL_TEMPORAL_RESOLUTION`、Pass1/Pass2 调用与 token log |
 
-真实代码：
+真实代码与推荐审阅入口：
 
-- [SA-Mem-core B1 branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-local-temporal)
-- [B1 commit `510d0f3`](https://github.com/jianminYa/SA-Mem-core/commit/510d0f3e935b72c06128987898926f4e41948db9)
-- [B1 vs B0 compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b1-local-temporal)
+- [B1 core view branch](https://github.com/jianminYa/SA-Mem-core/tree/halumem-b1-core-view)
+- [B1 core vs main compare](https://github.com/jianminYa/SA-Mem-core/compare/main...halumem-b1-core-view)
+- [原始 B1 commit `510d0f3`](https://github.com/jianminYa/SA-Mem-core/commit/510d0f3e935b72c06128987898926f4e41948db9)
